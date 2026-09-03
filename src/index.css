@@ -1,0 +1,401 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-scale: 1;
+  }
+
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #F8FAFC;
+    color: #1E293B;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* ====================================================
+     PREMIUM CLINICAL DARK MODE SYSTEM
+     ==================================================== */
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html.dark body {
+    background-color: #070B14 !important;
+    color: #F1F5F9 !important;
+  }
+
+  html.dark .bg-clinical-surface {
+    background-color: #070B14 !important;
+  }
+
+  html.dark .text-clinical-text {
+    color: #E2E8F0 !important;
+  }
+
+  /* Surfaces & Cards */
+  html.dark .bg-white,
+  html.dark .bg-white\/95,
+  html.dark .bg-white\/90,
+  html.dark .bg-white\/80 {
+    background-color: #0F172A !important;
+    color: #F1F5F9 !important;
+  }
+
+  html.dark .bg-slate-50,
+  html.dark .bg-slate-50\/70,
+  html.dark .bg-slate-50\/80,
+  html.dark .bg-slate-50\/60,
+  html.dark .bg-slate-50\/50,
+  html.dark .bg-slate-100 {
+    background-color: #162032 !important;
+    color: #E2E8F0 !important;
+  }
+
+  html.dark .bg-slate-100\/80 {
+    background-color: rgba(22, 32, 50, 0.8) !important;
+  }
+
+  html.dark .bg-slate-200 {
+    background-color: #1E293B !important;
+  }
+
+  /* Headers & Footers */
+  html.dark header {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    border-color: #1E293B !important;
+  }
+
+  html.dark footer {
+    border-color: #1E293B !important;
+  }
+
+  /* Borders */
+  html.dark .border-slate-200,
+  html.dark .border-slate-200\/80,
+  html.dark .border-slate-200\/90,
+  html.dark .border-slate-200\/60,
+  html.dark .border-slate-100,
+  html.dark .border-slate-300 {
+    border-color: #1E293B !important;
+  }
+
+  html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+  html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #1E293B !important;
+  }
+
+  /* Typography Overrides in Dark Mode */
+  html.dark .text-slate-900,
+  html.dark .text-navy-900,
+  html.dark .text-navy-950,
+  html.dark .text-slate-800 {
+    color: #F8FAFC !important;
+  }
+
+  html.dark .text-slate-700,
+  html.dark .text-slate-600 {
+    color: #CBD5E1 !important;
+  }
+
+  html.dark .text-slate-500,
+  html.dark .text-slate-400 {
+    color: #94A3B8 !important;
+  }
+
+  /* Hero Section Gradients */
+  html.dark .bg-gradient-to-b.from-white {
+    background-image: linear-gradient(to bottom, #070B14, #0F172A, #070B14) !important;
+  }
+
+  /* Icon Containers & Chips in Dark Mode */
+  html.dark .bg-blue-50,
+  html.dark .bg-teal-50,
+  html.dark .bg-emerald-50,
+  html.dark .bg-purple-50,
+  html.dark .bg-indigo-50,
+  html.dark .bg-amber-50,
+  html.dark .bg-red-50 {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+  }
+
+  html.dark .bg-emerald-100 {
+    background-color: rgba(5, 150, 105, 0.2) !important;
+    color: #6EE7B7 !important;
+  }
+
+  html.dark .bg-blue-100 {
+    background-color: rgba(2, 103, 193, 0.2) !important;
+    color: #93C5FD !important;
+  }
+
+  html.dark .bg-red-100 {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    color: #FCA5A5 !important;
+  }
+
+  html.dark .bg-purple-100 {
+    background-color: rgba(147, 51, 234, 0.2) !important;
+    color: #D8B4FE !important;
+  }
+
+  html.dark .text-blue-600 {
+    color: #38BDF8 !important;
+  }
+
+  html.dark .text-teal-600,
+  html.dark .text-teal-700 {
+    color: #2DD4BF !important;
+  }
+
+  html.dark .text-emerald-600,
+  html.dark .text-emerald-700,
+  html.dark .text-emerald-800 {
+    color: #34D399 !important;
+  }
+
+  html.dark .text-purple-600,
+  html.dark .text-purple-700 {
+    color: #C084FC !important;
+  }
+
+  html.dark .text-indigo-600,
+  html.dark .text-indigo-700 {
+    color: #818CF8 !important;
+  }
+
+  html.dark .text-amber-600,
+  html.dark .text-amber-700 {
+    color: #FBBF24 !important;
+  }
+
+  html.dark .text-red-600,
+  html.dark .text-red-700 {
+    color: #F87171 !important;
+  }
+
+  /* Inputs, Selects, and Textareas */
+  html.dark input[type="text"],
+  html.dark input[type="tel"],
+  html.dark input[type="email"],
+  html.dark input[type="password"],
+  html.dark input[type="number"],
+  html.dark select,
+  html.dark textarea {
+    background-color: #162032 !important;
+    border-color: #334155 !important;
+    color: #F8FAFC !important;
+  }
+
+  html.dark input::placeholder,
+  html.dark textarea::placeholder {
+    color: #64748B !important;
+  }
+
+  html.dark input:focus,
+  html.dark select:focus,
+  html.dark textarea:focus {
+    border-color: #38BDF8 !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+  }
+
+  /* Mediblue Accents in Dark Mode */
+  html.dark .bg-mediblue-50,
+  html.dark .bg-mediblue-50\/80,
+  html.dark .bg-mediblue-50\/30 {
+    background-color: rgba(14, 133, 229, 0.15) !important;
+  }
+
+  html.dark .text-mediblue-600,
+  html.dark .text-mediblue-700,
+  html.dark .text-mediblue-800 {
+    color: #38BDF8 !important;
+  }
+
+  html.dark .border-mediblue-200,
+  html.dark .border-mediblue-300 {
+    border-color: rgba(56, 189, 248, 0.35) !important;
+  }
+
+  /* Modals & Dialogs */
+  html.dark .bg-slate-900\/60,
+  html.dark .bg-slate-900\/50 {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+  }
+
+  /* Tables */
+  html.dark table tbody tr:hover {
+    background-color: rgba(30, 41, 59, 0.6) !important;
+  }
+
+  /* White buttons in dark mode */
+  html.dark button.bg-white,
+  html.dark a.bg-white {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+  }
+
+  html.dark button.bg-white:hover,
+  html.dark a.bg-white:hover {
+    background-color: #2D3748 !important;
+  }
+
+  html.dark .hover\:bg-slate-50:hover,
+  html.dark .hover\:bg-slate-100:hover {
+    background-color: #1E293B !important;
+  }
+
+  /* Accessibility Text Scaling */
+  html.text-scale-lg {
+    font-size: 18px;
+  }
+
+  html.text-scale-xl {
+    font-size: 20px;
+  }
+
+  /* High Contrast Mode */
+  html.high-contrast {
+    filter: contrast(1.25);
+  }
+  html.high-contrast body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  html.high-contrast .clinical-card {
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 2px #000000 !important;
+  }
+  html.high-contrast button {
+    border-width: 2px !important;
+  }
+
+  /* Reduced Motion */
+  html.reduced-motion *,
+  html.reduced-motion *::before,
+  html.reduced-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@layer components {
+  /* Assisted Mode for Elderly & Low-literacy */
+  .assisted-mode {
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+  }
+  .assisted-mode button {
+    min-height: 4rem !important;
+    font-size: 1.35rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  .assisted-mode .question-card {
+    padding: 2.5rem !important;
+  }
+  .assisted-mode .option-btn {
+    min-height: 4.5rem !important;
+    font-size: 1.35rem !important;
+  }
+
+  /* Clinical Glass/Card Styles */
+  .clinical-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    transition: all 0.2s ease-in-out;
+  }
+
+  html.dark .clinical-card {
+    background-color: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  }
+
+  .clinical-card:hover {
+    box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  }
+
+  html.dark .clinical-card:hover {
+    box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.6);
+  }
+
+  .clinical-card-interactive {
+    cursor: pointer;
+  }
+  .clinical-card-interactive:hover {
+    border-color: #93C5FD;
+    transform: translateY(-2px);
+  }
+
+  html.dark .clinical-card-interactive:hover {
+    border-color: #38BDF8;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Document Laser Scanner Animation */
+@keyframes laserSweep {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 96%;
+    opacity: 1;
+  }
+  100% {
+    top: 0%;
+    opacity: 0.8;
+  }
+}
+
+.laser-scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #0EA5E9, #38BDF8, #0EA5E9, transparent);
+  box-shadow: 0 0 15px 3px rgba(14, 165, 233, 0.7);
+  animation: laserSweep 2.2s infinite ease-in-out;
+  z-index: 20;
+}
