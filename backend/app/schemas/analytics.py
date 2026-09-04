@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class DashboardStatsResponse(BaseModel):
     patientsWaiting: int
@@ -17,3 +17,4 @@ class SystemHealthResponse(BaseModel):
     voiceService: Dict[str, Any]
     historyAIService: Dict[str, Any]
     abdmIntegration: Dict[str, Any]
+    sarvamService: Optional[Dict[str, Any]] = None

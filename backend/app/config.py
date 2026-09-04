@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     
+    # Fast2SMS OTP Gateway
+    FAST2SMS_API_KEY: str = os.getenv("FAST2SMS_API_KEY", "")
+    
+    # Sarvam AI (Indian Language Voice ASR, TTS & Translation)
+    SARVAM_API_KEY: str = os.getenv("SARVAM_API_KEY", "")
+    
     # CORS settings
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",

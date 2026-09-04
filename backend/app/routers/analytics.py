@@ -28,13 +28,22 @@ def get_dashboard_overview(db: Session = Depends(get_db)):
         "completionRate": completion
     }
 
+from app.services.sarvam_service import SarvamService
+_sarvam = SarvamService()
+
 @router.get("/system-health", response_model=SystemHealthResponse)
 def get_system_health():
+    is_sarvam_on = _sarvam.is_configured()
     return {
         "api": {"status": "Online (FastAPI 0.110+)", "latencyMs": 24, "uptime": "99.99%"},
         "database": {"status": "Online (SQLAlchemy 2.0 Pool)", "engine": "PostgreSQL / SQLite", "connectionPool": "Healthy"},
         "ocrService": {"status": "Online (PaddleOCR Engine Ready)", "responseTime": "1.2s", "model": "LayoutXLM"},
         "voiceService": {"status": "Online (Web Speech API + FastConformer)", "accuracy": "98.2%"},
         "historyAIService": {"status": "Online (MediKiosk BioMistral)", "model": "BioMistral-7B-Clinical"},
-        "abdmIntegration": {"status": "Sandbox Environment Ready", "abhaGateway": "ABDM Milestone 1 Verified"}
+        "abdmIntegration": {"status": "Sandbox Environment Ready", "abhaGateway": "ABDM Milestone 1 Verified"},
+        "sarvamService": {
+            "status": "Active (Saaras ASR + Bulbul TTS)" if is_sarvam_on else "Ready (Awaiting SARVAM_API_KEY in .env)",
+            "configured": is_sarvam_on,
+            "engine": "Sarvam AI Sovereign Indian Stack",
+        }
     }
