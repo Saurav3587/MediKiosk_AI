@@ -26,10 +26,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./medikiosk.db")
     
     # LLM Provider Configuration
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "biomistral") # 'openai' | 'anthropic' | 'gemini' | 'biomistral'
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "sarvam") # 'sarvam' | 'biomistral' | 'openai'
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     
     # Fast2SMS OTP Gateway
     FAST2SMS_API_KEY: str = os.getenv("FAST2SMS_API_KEY", "")

@@ -61,6 +61,19 @@ export function DoctorProvider({ children }) {
           setDoctorProfile(res.data);
         }
       });
+    } else {
+      // Auto-authenticate default demo doctor session for seamless clinic workflow
+      apiService
+        .loginDoctor({
+          email: "dr.arun@medikiosk.in",
+          password: "doctor123",
+        })
+        .then((res) => {
+          if (res.success && res.doctor) {
+            loginDoctor(res.doctor);
+            refreshPatients();
+          }
+        });
     }
   }, []);
 

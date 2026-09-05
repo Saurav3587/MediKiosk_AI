@@ -48,7 +48,7 @@ const playScanSuccessBeep = () => {
 };
 
 // Robust parser for ABDM / Ayushman Bharat QR codes and card data
-export const parseABHAData = (rawText) => {
+const parseABHAData = (rawText) => {
   if (!rawText) return null;
   const text = String(rawText).trim();
 
@@ -184,15 +184,15 @@ export function IdentifyPage() {
   const qrFileInputRef = useRef(null);
   const phoneCameraInputRef = useRef(null);
 
-  // Phone OTP States
-  const [phoneStep, setPhoneStep] = useState("enter_phone"); // 'enter_phone' | 'enter_otp' | 'verified'
+  // Mobile Fast2SMS OTP States
+  const [phoneStep, setPhoneStep] = useState("enter_phone"); // 'enter_phone' | 'enter_otp' | 'verified_new'
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
-  const [otpTimer, setOtpTimer] = useState(30);
+  const [fast2smsInfo, setFast2smsInfo] = useState(null); // { code, is_live, message }
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [otpTimer, setOtpTimer] = useState(45);
   const [otpError, setOtpError] = useState(null);
-  const [smsToast, setSmsToast] = useState(null);
-  const otpInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  const [otpLoading, setOtpLoading] = useState(false);
+  const otpInputRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
 
   // New Patient Form
   const [newPatientForm, setNewPatientForm] = useState({
@@ -224,7 +224,7 @@ export function IdentifyPage() {
     };
   }, [cameraStream]);
 
-  // Countdown timer for OTP
+  // Countdown timer for Fast2SMS OTP
   useEffect(() => {
     let interval = null;
     if (phoneStep === "enter_otp" && otpTimer > 0) {
@@ -234,6 +234,8 @@ export function IdentifyPage() {
     }
     return () => clearInterval(interval);
   }, [phoneStep, otpTimer]);
+
+
 
   // Complete scanning and proceed
   const handleConfirmScannedPatient = useCallback((details) => {
@@ -452,38 +454,41 @@ export function IdentifyPage() {
     }
   };
 
-  // Phone OTP Flow: Step 1 - Send OTP
-  const handleSendPhoneOtp = (e) => {
-    e.preventDefault();
-    const cleanPhone = phoneNumber.replace(/\D/g, "");
+  // Fast2SMS Send OTP
+  const handleSendFast2SmsOtp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const cleanPhone = phoneNumber.replace(/\D/g, "").slice(-10);
     if (cleanPhone.length < 10) {
-      setOtpError("Please enter a valid 10-digit mobile number.");
+      setOtpError("Please enter a valid 10-digit Indian mobile number.");
       return;
     }
 
     setOtpError(null);
-    const code = String(Math.floor(1000 + Math.random() * 9000));
-    setGeneratedOtp(code);
-    setOtpTimer(30);
-    setPhoneStep("enter_otp");
+    setOtpLoading(true);
+    setOtpDigits(["", "", "", "", "", ""]);
 
-    // Display simulated SMS Notification toast
-    setSmsToast({
-      sender: "ABDM-GOV",
-      code: code,
-      text: `Your Ayushman Bharat MediKiosk verification code is ${code}. Valid for 10 minutes.`
-    });
+    try {
+      const res = await apiService.sendOtp(cleanPhone);
+      if (res.success && res.data) {
+        setFast2smsInfo(res.data);
+        setOtpTimer(45);
+        setPhoneStep("enter_otp");
+      } else {
+        setOtpError(res.error || "Failed to send OTP via Fast2SMS.");
+      }
+    } catch (err) {
+      setOtpError("Unable to connect to Fast2SMS service. Please check backend.");
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
-  // Handle individual OTP digit inputs
   const handleOtpDigitChange = (index, val) => {
     const clean = val.replace(/\D/g, "").slice(-1);
     const newDigits = [...otpDigits];
     newDigits[index] = clean;
     setOtpDigits(newDigits);
-
-    // Auto focus next box
-    if (clean && index < 3) {
+    if (clean && index < 5) {
       otpInputRefs[index + 1].current?.focus();
     }
   };
@@ -494,44 +499,39 @@ export function IdentifyPage() {
     }
   };
 
-  // Auto fill OTP for instant demo
-  const handleAutoFillOtp = () => {
-    const codeToUse = generatedOtp || "4829";
-    setGeneratedOtp(codeToUse);
-    const parts = codeToUse.split("");
-    setOtpDigits(parts);
-    otpInputRefs[3].current?.focus();
-  };
+  // Verify Fast2SMS OTP
+  const handleVerifyFast2SmsOtp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const enteredCode = otpDigits.join("").trim();
+    const cleanPhone = phoneNumber.replace(/\D/g, "").slice(-10);
 
-  // Verify OTP
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    const enteredCode = otpDigits.join("");
-    if (enteredCode !== generatedOtp && enteredCode !== "1234" && enteredCode !== "4829") {
-      setOtpError("Invalid OTP code. Please check the code or click Auto-fill.");
+    if (enteredCode.length !== 6) {
+      setOtpError("Please enter all 6 digits of the verification code.");
       return;
     }
 
     setOtpError(null);
-    setPhoneStep("verified");
+    setOtpLoading(true);
 
-    // Lookup existing patient record by phone
-    const res = await apiService.getPatient(phoneNumber);
-    if (res.success && res.data) {
-      setPatientInfo(res.data);
-      setRecordFound(true);
-    } else {
-      const generatedAbha = `${Math.floor(10 + Math.random() * 89)}-${Math.floor(1000 + Math.random() * 8999)}-${Math.floor(1000 + Math.random() * 8999)}-${Math.floor(1000 + Math.random() * 8999)}`;
-      setPatientInfo({
-        id: `P-${Date.now().toString().slice(-4)}`,
-        name: "",
-        age: "",
-        gender: "Male",
-        phone: phoneNumber,
-        abhaId: generatedAbha,
-        department: "General Medicine",
-      });
-      setSelectedMethod("new");
+    try {
+      const res = await apiService.verifyOtp(cleanPhone, enteredCode);
+      if (!res.success) {
+        setOtpError(res.error || "Invalid or expired OTP code.");
+        return;
+      }
+
+      // Check if patient already has records in DB
+      const patientRes = await apiService.getPatient(cleanPhone);
+      if (patientRes.success && patientRes.data) {
+        setPatientInfo(patientRes.data);
+        setRecordFound(true);
+      } else {
+        setPhoneStep("verified_new");
+      }
+    } catch (err) {
+      setOtpError("Error verifying OTP. Please try again.");
+    } finally {
+      setOtpLoading(false);
     }
   };
 
@@ -571,27 +571,7 @@ export function IdentifyPage() {
           </p>
         </div>
 
-        {/* Simulated SMS Notification Toast */}
-        {smsToast && (
-          <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex items-start gap-3 animate-in slide-in-from-top-3 duration-300">
-            <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl flex-shrink-0">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <div className="flex-1 text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-bold font-mono text-emerald-400">{smsToast.sender}</span>
-                <span className="text-[10px] text-slate-400">Just now</span>
-              </div>
-              <p className="text-slate-200">{smsToast.text}</p>
-            </div>
-            <button
-              onClick={() => setSmsToast(null)}
-              className="text-slate-400 hover:text-white p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+
 
         {/* Found Patient Confirmation Card */}
         {recordFound ? (
@@ -651,6 +631,49 @@ export function IdentifyPage() {
         ) : (
           /* 4 Main Identification Options */
           <div className="space-y-3">
+            {/* Quick Demo Patient (1-Click Instant Start) */}
+            <div className="p-4 rounded-3xl bg-gradient-to-r from-mediblue-50 via-teal-50/60 to-emerald-50/80 border-2 border-mediblue-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-mediblue-600 to-teal-500 text-white flex items-center justify-center font-bold text-xs shadow-md flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-amber-300" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      Demo Patient: Ramesh Kumar (45, M)
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      1-Click Test
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Jump straight to AI Clinical Voice & Touch interview
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPatientInfo({
+                    id: "P-8842",
+                    name: "Ramesh Kumar",
+                    age: 45,
+                    gender: "Male",
+                    phone: "+91 98765 43210",
+                    abhaId: "91-4820-9182-3847",
+                    department: "General Medicine",
+                  });
+                  setCurrentStep("history");
+                  navigate("/patient/history");
+                }}
+                className="py-3 px-5 rounded-2xl bg-mediblue-600 hover:bg-mediblue-700 active:scale-[0.98] text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2 flex-shrink-0"
+              >
+                <span>Start AI Intake</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
             {/* Card 1: Scan ABHA QR */}
             <button
               onClick={handleOpenScanner}
@@ -721,7 +744,7 @@ export function IdentifyPage() {
               </form>
             )}
 
-            {/* Card 3: Mobile OTP Lookup */}
+            {/* Card 3: Mobile Number (Fast2SMS OTP Verification) */}
             <button
               onClick={() => setSelectedMethod(selectedMethod === "mobile" ? null : "mobile")}
               className={`w-full text-left p-5 rounded-3xl bg-white border-2 transition flex items-center justify-between group ${
@@ -734,21 +757,21 @@ export function IdentifyPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-sm group-hover:text-indigo-700">
-                    {t.identify?.mobileNumber || "Mobile Number (OTP Verification)"}
+                    {t.identify?.mobileNumber || "Mobile Number (Fast2SMS OTP)"}
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {t.identify?.mobileNumberDesc || "Verify with 10-digit mobile number and instant SMS OTP."}
+                    {t.identify?.mobileNumberDesc || "Verify with 10-digit mobile number and Fast2SMS verification code."}
                   </p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-400" />
             </button>
 
-            {/* Sub-form: Mobile OTP Multi-Stage */}
+            {/* Sub-form: Fast2SMS Multi-Stage OTP */}
             {selectedMethod === "mobile" && (
               <div className="bg-white p-6 rounded-3xl border-2 border-indigo-200 shadow-soft space-y-4 animate-in fade-in duration-200">
                 {phoneStep === "enter_phone" ? (
-                  <form onSubmit={handleSendPhoneOtp} className="space-y-4">
+                  <form onSubmit={handleSendFast2SmsOtp} className="space-y-4">
                     <div>
                       <label className="text-xs font-bold text-slate-700 block mb-1.5">
                         Enter 10-Digit Mobile Number:
@@ -760,7 +783,10 @@ export function IdentifyPage() {
                           maxLength={10}
                           placeholder="9876543210"
                           value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          onChange={(e) => {
+                            setPhoneNumber(e.target.value);
+                            setOtpError(null);
+                          }}
                           className="w-full pl-14 pr-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-mono font-bold tracking-wider"
                           required
                           autoFocus
@@ -777,24 +803,49 @@ export function IdentifyPage() {
 
                     <button
                       type="submit"
-                      className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
+                      disabled={otpLoading}
+                      className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
                     >
                       <KeyRound className="w-4 h-4" />
-                      <span>Send 4-Digit Verification OTP</span>
+                      <span>{otpLoading ? "Connecting to Fast2SMS..." : "Send Fast2SMS Verification Code"}</span>
                     </button>
                   </form>
-                ) : (
-                  /* OTP Entry Stage */
-                  <form onSubmit={handleVerifyOtp} className="space-y-4">
+                ) : phoneStep === "enter_otp" ? (
+                  <form onSubmit={handleVerifyFast2SmsOtp} className="space-y-4">
                     <div className="text-center space-y-1">
-                      <h4 className="font-bold text-slate-900 text-sm">Enter 4-Digit Verification Code</h4>
+                      <h4 className="font-bold text-slate-900 text-sm">Enter 6-Digit Verification Code</h4>
                       <p className="text-xs text-slate-500">
                         Code sent to <strong className="text-slate-800 font-mono">+91 {phoneNumber}</strong>
                       </p>
                     </div>
 
-                    {/* 4 Pin Boxes */}
-                    <div className="flex justify-center gap-3 py-2">
+                    {/* Status Feedback */}
+                    {fast2smsInfo?.is_live ? (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs text-emerald-800 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        <span>Live SMS dispatched to your phone via Fast2SMS. Check your messages.</span>
+                      </div>
+                    ) : (
+                      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 space-y-1.5">
+                        <div className="flex items-center justify-between font-semibold">
+                          <span className="flex items-center gap-1.5 text-amber-800">
+                            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                            <span>Fast2SMS Gateway Status</span>
+                          </span>
+                          {fast2smsInfo?.code && (
+                            <span className="font-mono text-indigo-700 bg-white border border-indigo-200 px-2.5 py-0.5 rounded-lg text-xs font-bold shadow-sm">
+                              Code: {fast2smsInfo.code}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-amber-800 leading-relaxed">
+                          {fast2smsInfo?.message || "Recharge ₹100 on Fast2SMS dashboard to enable direct carrier SMS delivery."}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 6 Pin Boxes */}
+                    <div className="flex justify-center gap-2 sm:gap-3 py-2">
                       {otpDigits.map((digit, idx) => (
                         <input
                           key={idx}
@@ -805,58 +856,101 @@ export function IdentifyPage() {
                           value={digit}
                           onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                          className="w-12 h-14 text-center text-xl font-bold font-mono rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 bg-slate-50 text-slate-900"
+                          className="w-10 sm:w-12 h-14 text-center text-xl font-bold font-mono rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 bg-slate-50 text-slate-900 transition"
                         />
                       ))}
                     </div>
 
-                    {/* Auto-fill & Resend Bar */}
+                    {/* Resend Countdown */}
                     <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                      <button
-                        type="button"
-                        onClick={handleAutoFillOtp}
-                        className="text-indigo-600 font-bold hover:underline flex items-center gap-1"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Auto-fill ({generatedOtp || "4829"})</span>
-                      </button>
-
+                      <span className="text-slate-400">Didn't receive code?</span>
                       {otpTimer > 0 ? (
-                        <span>Resend in {otpTimer}s</span>
+                        <span className="font-medium text-slate-500 font-mono">Resend in {otpTimer}s</span>
                       ) : (
                         <button
                           type="button"
-                          onClick={handleSendPhoneOtp}
+                          onClick={handleSendFast2SmsOtp}
                           className="text-indigo-600 font-bold hover:underline flex items-center gap-1"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
-                          <span>Resend OTP</span>
+                          <span>Resend Code</span>
                         </button>
                       )}
                     </div>
 
                     {otpError && (
-                      <p className="text-xs text-red-600 font-medium text-center">{otpError}</p>
+                      <p className="text-xs text-red-600 font-medium text-center bg-red-50 py-2 px-3 rounded-xl border border-red-200">
+                        {otpError}
+                      </p>
                     )}
 
                     <div className="flex gap-2 pt-2">
                       <button
                         type="button"
-                        onClick={() => setPhoneStep("enter_phone")}
-                        className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs"
+                        onClick={() => {
+                          setPhoneStep("enter_phone");
+                          setOtpDigits(["", "", "", "", "", ""]);
+                          setOtpError(null);
+                        }}
+                        className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition"
                       >
                         Change Number
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5"
+                        disabled={otpLoading}
+                        className="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5"
                       >
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>Verify & Continue</span>
+                        <span>{otpLoading ? "Verifying..." : "Verify & Continue"}</span>
                       </button>
                     </div>
                   </form>
-                )}
+                ) : phoneStep === "verified_new" ? (
+                  <div className="text-center py-3 px-2 space-y-4 animate-in fade-in duration-200">
+                    <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200 shadow-sm">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                        Mobile Verified via Fast2SMS
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-base">
+                        +91 {phoneNumber}
+                      </h4>
+                      <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                        No previous hospital visits or ABHA records found for this mobile number. Proceed to complete quick registration.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhoneStep("enter_phone");
+                          setOtpDigits(["", "", "", "", "", ""]);
+                          setPhoneNumber("");
+                        }}
+                        className="py-3 px-4 rounded-2xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition"
+                      >
+                        Try Another Number
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewPatientForm((prev) => ({
+                            ...prev,
+                            phone: phoneNumber,
+                          }));
+                          setSelectedMethod("new");
+                        }}
+                        className="flex-1 py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>Register as New Patient</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
 

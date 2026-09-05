@@ -17,7 +17,21 @@ const INITIAL_PATIENT_INFO = {
 };
 
 export function PatientProvider({ children }) {
-  const [language, setLanguageState] = useState(() => localStorage.getItem("medikiosk_language") || "en");
+  const [language, setLanguageState] = useState(() => {
+    // Check clean preference key
+    const saved = localStorage.getItem("medikiosk_language_v3");
+    if (saved) return saved;
+
+    // Purge legacy stored keys that may have been polluted with 'hi'
+    try {
+      localStorage.removeItem("medikiosk_language");
+      localStorage.removeItem("medikiosk_language_v1");
+      localStorage.removeItem("medikiosk_language_v2");
+      localStorage.setItem("medikiosk_language_v3", "en");
+    } catch (e) {}
+
+    return "en";
+  });
   const [patientInfo, setPatientInfo] = useState(INITIAL_PATIENT_INFO);
   const [currentStep, setCurrentStep] = useState("identify"); // identify, language, consent, history, documents, review, complete
   const [answers, setAnswers] = useState({});
@@ -33,7 +47,10 @@ export function PatientProvider({ children }) {
   // Set language and persist
   const setLanguage = (lang) => {
     setLanguageState(lang);
-    localStorage.setItem("medikiosk_language", lang);
+    try {
+      localStorage.setItem("medikiosk_language_v3", lang);
+      localStorage.setItem("medikiosk_language", lang);
+    } catch (e) {}
   };
 
   // Translation accessor

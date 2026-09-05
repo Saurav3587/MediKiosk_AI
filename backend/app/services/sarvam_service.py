@@ -29,7 +29,7 @@ class SarvamService:
         audio_bytes: bytes,
         filename: str = "audio.wav",
         language_code: str = "unknown",
-        model: str = "saaras:v1",
+        model: str = "saaras:v3",
     ) -> Dict[str, Any]:
         """Transcribes Indian conversational speech (Hindi, Hinglish, Tamil, etc.) using Sarvam Saaras."""
         if not self.is_configured():

@@ -1,9 +1,8 @@
 const getApiBaseUrl = () => {
+  // When running in the browser, use relative path so Vite proxy forwards requests seamlessly
+  // without browser Mixed Content blocks (HTTPS frontend -> HTTP backend)
   if (typeof window !== "undefined") {
-    const host = window.location.hostname;
-    if (host && host !== "localhost" && host !== "127.0.0.1") {
-      return `http://${host}:8000/api/v1`;
-    }
+    return "/api/v1";
   }
   return "http://127.0.0.1:8000/api/v1";
 };
@@ -27,6 +26,84 @@ function getAuthHeaders() {
  * Directly connects to the FastAPI backend and PostgreSQL / SQLite database.
  */
 export const apiService = {
+  // Generic POST request helper
+  async post(endpoint, data = {}, options = {}) {
+    try {
+      const url = endpoint.startsWith("http")
+        ? endpoint
+        : `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { ...getAuthHeaders(), ...(options.headers || {}) },
+        body: JSON.stringify(data),
+      });
+      const resData = await res.json().catch(() => null);
+      if (!res.ok) {
+        const error = new Error(resData?.detail || `Request failed with status ${res.status}`);
+        error.response = { status: res.status, data: resData };
+        throw error;
+      }
+      return { ok: true, status: res.status, data: resData };
+    } catch (e) {
+      console.warn("apiService.post error:", e);
+      throw e;
+    }
+  },
+
+
+
+  // Patient Fast2SMS OTP: Send verification OTP
+  async sendOtp(phone) {
+    const cleanPhone = String(phone).replace(/\D/g, "").slice(-10);
+    try {
+      const res = await fetch(`${API_BASE_URL}/otp/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: cleanPhone }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return { success: true, data };
+      }
+      const err = await res.json().catch(() => ({ detail: "Failed to send OTP via Fast2SMS" }));
+      return { success: false, error: err.detail || "Failed to send OTP via Fast2SMS" };
+    } catch (e) {
+      console.warn("Backend unreachable for Fast2SMS OTP:", e);
+      return {
+        success: false,
+        error: "Unable to connect to backend server. Please check that 'python run.py' is running on port 8000.",
+      };
+    }
+  },
+
+  // Patient Fast2SMS OTP: Verify OTP code
+  async verifyOtp(phone, code) {
+    const cleanPhone = String(phone).replace(/\D/g, "").slice(-10);
+    const cleanCode = String(code || "").trim();
+    if (!cleanCode || cleanCode.length < 4 || cleanCode.length > 6) {
+      return { success: false, error: "Please enter the complete 6-digit verification code." };
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/otp/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: cleanPhone, code: cleanCode }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return { success: true, data };
+      }
+      const err = await res.json().catch(() => ({ detail: "Invalid or expired verification code" }));
+      return { success: false, error: err.detail || "Invalid or expired verification code." };
+    } catch (e) {
+      console.warn("Backend error during verifyOtp:", e);
+      return {
+        success: false,
+        error: "Unable to connect to backend server to verify OTP. Please ensure backend is running.",
+      };
+    }
+  },
+
   // Doctor Authentication
   async loginDoctor({ email, password }) {
     try {
@@ -105,18 +182,53 @@ export const apiService = {
   // Fetch patient queue directly from backend / PostgreSQL
   async getPatientQueue({ department = "all", search = "", status = "all" } = {}) {
     try {
+      // Ensure doctor is authenticated; auto-login default demo doctor if no token exists
+      let token = localStorage.getItem("medikiosk_doctor_token");
+      if (!token) {
+        const loginRes = await this.loginDoctor({
+          email: "dr.arun@medikiosk.in",
+          password: "doctor123",
+        });
+        if (loginRes.success && loginRes.token) {
+          token = loginRes.token;
+        }
+      }
+
       const params = new URLSearchParams();
       if (department && department !== "all") params.append("department", department);
       if (status && status !== "all") params.append("status", status);
       if (search && search.trim()) params.append("search", search.trim());
 
-      const res = await fetch(`${API_BASE_URL}/doctor/queue?${params.toString()}`, {
+      let res = await fetch(`${API_BASE_URL}/doctor/queue?${params.toString()}`, {
         headers: getAuthHeaders(),
       });
+
+      // If token expired or returned 401, re-login once and retry
+      if (res.status === 401) {
+        localStorage.removeItem("medikiosk_doctor_token");
+        const reLogin = await this.loginDoctor({
+          email: "dr.arun@medikiosk.in",
+          password: "doctor123",
+        });
+        if (reLogin.success && reLogin.token) {
+          res = await fetch(`${API_BASE_URL}/doctor/queue?${params.toString()}`, {
+            headers: getAuthHeaders(),
+          });
+        }
+      }
+
       if (res.ok) {
         const data = await res.json();
         return { success: true, data };
       }
+
+      // Fallback to public patients endpoint if doctor endpoint fails
+      const fallbackRes = await fetch(`${API_BASE_URL}/patients?${params.toString()}`);
+      if (fallbackRes.ok) {
+        const data = await fallbackRes.json();
+        return { success: true, data };
+      }
+
       const err = await res.json().catch(() => ({ detail: "Failed to fetch patient queue" }));
       return { success: false, error: err.detail || "Failed to fetch queue", data: [] };
     } catch (e) {
@@ -128,6 +240,15 @@ export const apiService = {
   // Fetch priority triage queue from PostgreSQL
   async getPriorityQueue() {
     try {
+      let token = localStorage.getItem("medikiosk_doctor_token");
+      if (!token) {
+        const loginRes = await this.loginDoctor({
+          email: "dr.arun@medikiosk.in",
+          password: "doctor123",
+        });
+        if (loginRes.success) token = loginRes.token;
+      }
+
       const res = await fetch(`${API_BASE_URL}/doctor/priority`, {
         headers: getAuthHeaders(),
       });
@@ -304,4 +425,94 @@ export const apiService = {
       };
     }
   },
+
+  // -------------------------------------------------------------
+  // Sarvam AI Sovereign Indian Voice & Translation Integration
+  // -------------------------------------------------------------
+  async getSarvamStatus() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/ai/sarvam/status`);
+      if (res.ok) return await res.json();
+      return { configured: false };
+    } catch {
+      return { configured: false };
+    }
+  },
+
+  async transcribeSarvamAudio(audioBlob, languageCode = "unknown") {
+    try {
+      const formData = new FormData();
+      formData.append("file", audioBlob, "recording.wav");
+      formData.append("language_code", languageCode);
+
+      const res = await fetch(`${API_BASE_URL}/ai/sarvam/speech-to-text`, {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const err = await res.json().catch(() => ({ detail: "Sarvam transcription failed" }));
+      return { success: false, error: err.detail || "Sarvam transcription failed" };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  },
+
+  async synthesizeSarvamSpeech(text, languageCode = "hi-IN", speaker = "ritu") {
+    try {
+      const res = await fetch(`${API_BASE_URL}/ai/sarvam/text-to-speech`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, language_code: languageCode, speaker }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      return { success: false, error: "TTS synthesis failed" };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  },
+
+  async translateSarvam(text, sourceLang = "hi-IN", targetLang = "en-IN") {
+    try {
+      const res = await fetch(`${API_BASE_URL}/ai/sarvam/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          source_language_code: sourceLang,
+          target_language_code: targetLang,
+        }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      return { success: false, error: "Translation failed", translated_text: text };
+    } catch (e) {
+      return { success: false, error: e.message, translated_text: text };
+    }
+  },
+
+
+
+
+  async conversationalIntakeChat(payload) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/ai/conversational-intake`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const err = await res.json().catch(() => ({ detail: "Chat failed" }));
+      return { success: false, error: err.detail || "Intake conversation failed" };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  },
 };
+

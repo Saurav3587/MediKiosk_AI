@@ -36,8 +36,8 @@ export function LandingPage() {
 
   const capabilities = [
     {
-      title: t.hero?.capabilities?.voiceTouch?.title || "Voice + Touch Input",
-      desc: t.hero?.capabilities?.voiceTouch?.desc || "Speak naturally in your language or tap quick intuitive cards on any mobile, tablet, or kiosk screen.",
+      title: t.hero?.capabilities?.voiceTouch?.title || "Sarvam AI Sovereign Voice + Touch",
+      desc: t.hero?.capabilities?.voiceTouch?.desc || "Speak naturally in Hindi, Hinglish, or English. The assistant speaks questions aloud in natural regional accents and transcribes answers accurately.",
       icon: Mic,
       gradient: "from-blue-600 to-teal-500",
     },

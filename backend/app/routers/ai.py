@@ -139,168 +139,138 @@ def _detect_priority_triggers(text: str) -> tuple[bool, str]:
     return False, ""
 
 
+def _is_hindi_language(text: str, declared_lang: str) -> bool:
+    """Accurately detects whether patient input is in Hindi (Devanagari script or Hinglish phonetic words)
+    or if Hindi was requested.
+    """
+    if declared_lang and declared_lang.lower().startswith("hi"):
+        return True
+
+    # 1. Any Devanagari Unicode characters (Hindi script: \u0900 to \u097F)
+    if any("\u0900" <= c <= "\u097f" for c in text):
+        return True
+
+    # 2. Common Hindi / Hinglish clinical & conversational keywords
+    lower = text.lower()
+    hindi_tokens = {
+        "mujhe", "mera", "meri", "mere", "hamko", "humko", "dard", "bukhar", "khansi",
+        "seene", "seena", "chhati", "pet", "pait", "sir", "sar", "ulti", "chakkar",
+        "thand", "badan", "gale", "saans", "sans", "dawa", "davai", "dawai", "nahi",
+        "nhi", "hai", "hain", "ho", "raha", "rahi", "rahe", "din", "subah", "shaam",
+        "raat", "bahut", "bohot", "tez", "kam", "jyada", "zyada", "kya", "bhi", "aur",
+        "pe", "me", "mein", "se", "lag", "aaya", "aayi", "hua", "hui", "thik", "theek",
+        "pareshaan", "takleef", "sujan", "jalan", "ghabrahat", "kamzori", "kamjori",
+        "kharash", "petkharab", "dust", "khana", "paani", "so", "uth", "aata", "aati",
+        "hota", "hoti", "hote", "batao", "bataiye", "kripya", "namaste", "dhanyawad"
+    }
+    cleaned = "".join(c if c.isalnum() else " " for c in lower)
+    words = set(cleaned.split())
+    if words & hindi_tokens:
+        return True
+
+    # 3. If declared language is English and no Hindi keywords/characters detected, return False (English)
+    if declared_lang and declared_lang.lower().startswith("en"):
+        return False
+
+    # 4. If declared language is Hindi, return True
+    if declared_lang and declared_lang.lower().startswith("hi"):
+        return True
+
+    return False
+
+
 @router.post("/conversational-intake")
 async def process_conversational_intake(payload: ConversationalIntakeRequest):
-    """Processes patient natural voice/text intake in Hindi or English using Sarvam AI.
-    Provides empathetic clinical acknowledgment, asks 1 smart targeted follow-up question,
-    evaluates red flags, translates into medical English, and generates native voice audio in Hindi.
+    """Processes patient natural voice/text intake in Hindi or English using Sarvam-105B
+    grounded strictly on Verified Medical RAG (MoHFW Standard Treatment Guidelines).
+    Synthesizes natural Indian spoken voice via Sarvam Bulbul v3.
     """
-    is_hindi = payload.language.startswith("hi")
-    target_locale = "hi-IN" if is_hindi else "en-IN"
+    import time
+    start_total = time.time()
+
     user_text = payload.user_message.strip()
 
-    # 1. Red-flag evaluation
-    is_priority, priority_reason = _detect_priority_triggers(user_text)
+    # Detect language accurately (Hindi vs English)
+    is_hindi = _is_hindi_language(user_text, payload.language)
+    target_locale = "hi-IN" if is_hindi else "en-IN"
 
-    # 2. Determine conversational stage based on turn_count
-    # Turn 1: Chief complaint -> Acknowledge symptom + ask onset/severity/clarification
-    # Turn 2: Symptom details -> Ask current daily medicines & known drug allergies
-    # Turn 3+: Conclude intake politely and mark complete
-    is_concluding = payload.turn_count >= 3 or any(
-        w in user_text.lower()
-        for w in ["दवा नहीं", "no medicine", "no allergies", "कोई एलर्जी नहीं", "all good", "बस यही है", "done"]
-    ) and payload.turn_count >= 2
+    # 1. Deterministic red-flag safety trigger check
+    flag_priority, flag_reason = _detect_priority_triggers(user_text)
 
-    # 3. System prompt for Sarvam 105B Conversations
-    if is_concluding:
-        system_prompt = (
-            "You are MediKiosk AI, an empathetic Indian hospital OPD triage assistant. "
-            "The patient has shared their symptoms and medical details. "
-            "Politely thank the patient, assure them that their clinical information has been structured for the doctor, "
-            "and tell them they are ready for their physician consultation. "
-            "Do NOT diagnose or prescribe. Keep response strictly under 2 brief sentences in natural, polite Hindi (or English if requested)."
-        )
-    elif payload.turn_count == 2:
-        system_prompt = (
-            "You are MediKiosk AI, an empathetic Indian hospital OPD triage assistant. "
-            "Acknowledge the patient's symptom details briefly and warmly. "
-            "Then ask ONLY this essential clinical safety question: whether they are taking any regular daily medicines, or have any known medicine/drug allergies. "
-            "NEVER ask irrelevant questions (do not ask about Ayurvedic doshas, do not ask about appendectomy or gallbladder surgery, do not ask about smoking/alcohol). "
-            "Keep response strictly under 2 brief sentences in natural, polite Hindi (or English if requested)."
-        )
-    else:
-        system_prompt = (
-            "You are MediKiosk AI, an empathetic Indian hospital OPD triage assistant. "
-            "The patient just described their health issue: '" + user_text + "'. "
-            "1. Acknowledge their specific problem in 1 warm, comforting sentence in natural Hindi. "
-            "2. Ask exactly ONE targeted, clinically relevant follow-up question (e.g. how long they have had this, or if fever whether they have chills/cough, or if chest pain whether it radiates to left arm, or if stomach pain whether it is after meals). "
-            "NEVER ask irrelevant questions (no doshas, no unnecessary surgeries, no intrusive lifestyle questions). "
-            "Keep response strictly under 2 brief sentences in natural Hindi (or English if requested). Do NOT diagnose."
-        )
-
-    # Prepare chat messages
-    messages = [{"role": "system", "content": system_prompt}]
-    for h in payload.history[-4:]:
-        role = "assistant" if h.get("speaker") == "assistant" or h.get("role") == "assistant" else "user"
-        messages.append({"role": role, "content": h.get("text") or h.get("content") or ""})
-    messages.append({"role": "user", "content": user_text})
-
-    # 4. Generate Clinical Intake Response using Unified AI (Gemini -> OpenAI -> Sarvam)
-    assistant_reply_hi = ""
-    assistant_reply_en = ""
-
-    chat_content, llm_provider = unified_ai.generate_chat_response(
-        system_prompt=system_prompt,
+    # 2. Sovereign AI Call: Sarvam-105B + Verified Medical RAG Grounding
+    t0_llm = time.time()
+    intake_data = unified_ai.generate_unified_intake(
+        patient_name=payload.patient_name or "Patient",
+        age=payload.age or 30,
+        gender=payload.gender or "Male",
         user_message=user_text,
         history=payload.history,
+        turn_count=payload.turn_count,
         language="hi" if is_hindi else "en"
     )
-    if chat_content:
-        if is_hindi:
-            assistant_reply_hi = chat_content
-        else:
-            assistant_reply_en = chat_content
-    else:
-        # High-reliability Clinical Fallback
-        llm_provider = "Deterministic Clinical Engine"
-        if is_concluding:
-            assistant_reply_hi = "धन्यवाद! आपकी सभी स्वास्थ्य जानकारी सुरक्षित रूप से दर्ज कर ली गई है। आपका विवरण अब डॉक्टर के पास तैयार है।"
-            assistant_reply_en = "Thank you! All your health information has been recorded and prepared for the attending physician."
-        elif payload.turn_count == 2:
-            assistant_reply_hi = "समझ गया। क्या आप वर्तमान में कोई नियमित दवाइयां ले रहे हैं, या आपको किसी दवा से कोई एलर्जी है?"
-            assistant_reply_en = "Understood. Are you currently taking any regular daily medications, or do you have any known drug allergies?"
-        else:
-            if "पेट" in user_text or "stomach" in user_text.lower():
-                assistant_reply_hi = "समझा, पेट की तकलीफ काफी परेशान कर सकती है। क्या यह दर्द खाना खाने के बाद ज्यादा होता है, या उल्टी भी आ रही है?"
-                assistant_reply_en = "Understood, abdominal pain can be very uncomfortable. Does it increase after eating, or do you also have nausea/vomiting?"
-            elif "सीने" in user_text or "chest" in user_text.lower():
-                assistant_reply_hi = "समझा, सीने में भारीपन या दर्द को तुरंत देखना जरूरी है। क्या यह दर्द बाएं हाथ या गर्दन में भी फैलता है?"
-                assistant_reply_en = "Understood. Chest discomfort requires prompt evaluation. Does this pain radiate to your left arm or neck?"
-            elif "सिर" in user_text or "head" in user_text.lower():
-                assistant_reply_hi = "समझा, सिरदर्द के बारे में नोट कर लिया है। क्या आपको चक्कर या आंखों के आगे धुंधलापन भी महसूस हो रहा है?"
-                assistant_reply_en = "Understood, noted your headache. Are you also feeling dizzy or having blurred vision?"
-            elif "बुखार" in user_text or "fever" in user_text.lower():
-                assistant_reply_hi = "समझा, बुखार के लक्षण दर्ज कर लिए हैं। क्या आपको ठंड या कंपकंपी भी लग रही है, और यह कब से है?"
-                assistant_reply_en = "Understood, noted your fever. Are you experiencing chills or shivering, and since when?"
-            else:
-                assistant_reply_hi = "समझा, आपकी परेशानी को ध्यानपूर्वक दर्ज कर लिया है। यह समस्या कब से शुरू हुई है और कितनी तेज है?"
-                assistant_reply_en = "Understood, your health concern has been noted. When did this begin and how severe is it?"
+    llm_ms = int((time.time() - t0_llm) * 1000)
 
-    # Ensure both English and Hindi versions exist
-    if is_hindi and not assistant_reply_en:
-        tr_res = sarvam.translate(assistant_reply_hi, "hi-IN", "en-IN")
-        assistant_reply_en = tr_res.get("translated_text", assistant_reply_hi)
-    elif not is_hindi and not assistant_reply_hi:
-        tr_res = sarvam.translate(assistant_reply_en, "en-IN", "hi-IN")
-        assistant_reply_hi = tr_res.get("translated_text", assistant_reply_en)
+    # Merge red flag alerts
+    is_priority = flag_priority or intake_data.get("is_priority", False)
+    priority_reason = flag_reason or intake_data.get("priority_reason", "")
 
-    spoken_text = assistant_reply_hi if is_hindi else assistant_reply_en
+    assistant_reply_hi = intake_data.get("spoken_reply_hi", "")
+    assistant_reply_en = intake_data.get("reply_en", "")
 
-    # 5. Synthesize native voice audio using Unified Voice (ElevenLabs -> OpenAI TTS -> Sarvam Bulbul)
+    # Guarantee spoken_text matches Hindi when Hindi is detected
+    spoken_text = assistant_reply_hi if is_hindi else (assistant_reply_en or assistant_reply_hi)
+    suggested_chips = intake_data.get("suggested_chips", [])
+    is_complete = intake_data.get("is_complete", payload.turn_count >= 3)
+    clinical_summary = intake_data.get("clinical_summary", user_text)
+    llm_provider = intake_data.get("llm_provider", "Sarvam AI (Sarvam-105B)")
+    rag_guideline = intake_data.get("rag_guideline", "MoHFW Standard Treatment Guidelines")
+
+    # 3. Voice Audio Synthesis via Sarvam Bulbul v3
+    t0_tts = time.time()
     audio_base64, voice_provider = "", "Browser Web Speech"
     if payload.synthesize_audio and spoken_text:
         audio_base64, voice_provider = unified_ai.synthesize_speech(
             text=spoken_text,
             language_code=target_locale
         )
-
-    # Contextual Quick Chips
-    if is_concluding:
-        suggested_chips = (
-            ["हाँ, तैयार हूँ ✓", "कागजात जोड़ें", "समीक्षा करें"]
-            if is_hindi
-            else ["Yes, I am Ready ✓", "Add Documents", "Review Summary"]
-        )
-    elif payload.turn_count == 2:
-        suggested_chips = (
-            ["कोई दवा नहीं", "बीपी की दवा", "शुगर की दवा", "कोई एलर्जी नहीं", "पेनिसिलिन से एलर्जी"]
-            if is_hindi
-            else ["No regular medicines", "BP medicines", "Diabetes medicines", "No allergies", "Penicillin allergy"]
-        )
-    else:
-        suggested_chips = (
-            ["आज से शुरू हुआ", "2-3 दिनों से", "1 सप्ताह से", "हल्का दर्द", "काफी तेज दर्द", "उल्टी भी है"]
-            if is_hindi
-            else ["Started today", "Since 2-3 days", "Past 1 week", "Mild pain", "Severe pain", "Also have nausea"]
-        )
-
-    # Translate user message to English if needed for doctor summary
-    user_english = user_text
-    if is_hindi:
-        tr_user = sarvam.translate(user_text, "hi-IN", "en-IN")
-        user_english = tr_user.get("translated_text", user_text)
+    tts_ms = int((time.time() - t0_tts) * 1000)
+    total_ms = int((time.time() - start_total) * 1000)
 
     return {
         "success": True,
         "assistant_reply_hi": assistant_reply_hi,
         "assistant_reply_en": assistant_reply_en,
         "spoken_reply": spoken_text,
+        "spoken_reply_hi": assistant_reply_hi,
+        "detected_language": "hi" if is_hindi else "en",
         "audio_base64": audio_base64,
         "audio_format": "audio/mpeg;base64" if "ElevenLabs" in voice_provider or "OpenAI" in voice_provider else "audio/wav;base64",
         "is_priority": is_priority,
         "priority_reason": priority_reason,
         "suggested_chips": suggested_chips,
-        "is_intake_complete": is_concluding,
-        "user_english_translation": user_english,
+        "is_intake_complete": is_complete,
+        "user_english_translation": clinical_summary,
+        "clinical_summary": clinical_summary,
         "turn_count": payload.turn_count + 1,
         "llm_provider": llm_provider,
+        "main_llm": "Sarvam-105B",
+        "voice_to_text": "Sarvam Saaras (saaras:v3)",
+        "text_to_voice": "Sarvam Bulbul (bulbul:v3)",
         "voice_provider": voice_provider,
+        "translation_provider": "Sarvam AI Mayura (mayura:v1)",
+        "medical_grounding": "Verified Medical RAG (MoHFW STGs)",
+        "rag_guideline": rag_guideline,
+        "performance": {
+            "llm_ms": llm_ms,
+            "tts_ms": tts_ms,
+            "total_ms": total_ms
+        }
     }
 
 
 @router.get("/providers")
 def get_active_providers():
-    """Returns status of configured AI providers (Gemini, OpenAI, ElevenLabs, Sarvam)."""
+    """Returns status of configured sovereign AI providers (Sarvam-105B, Saaras v3, Bulbul v3, Medical RAG)."""
     return unified_ai.get_provider_status()
 
 

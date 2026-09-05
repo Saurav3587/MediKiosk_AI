@@ -1,0 +1,307 @@
+{
+  "protocols": [
+    {
+      "id": "acute_fever_infection",
+      "title": "Acute Febrile Illness & Tropical Infections (तीव्र बुखार एवं संक्रामक रोग)",
+      "guideline_source": "MoHFW Standard Treatment Guidelines (STG) - Acute Febrile Illness",
+      "keywords_en": [
+        "fever", "chills", "body ache", "shivering", "sweating", "cold", "flu",
+        "dengue", "malaria", "typhoid", "viral fever", "temperature", "high fever"
+      ],
+      "keywords_hi": [
+        "बुखार", "bukhar", "thand", "thnd", "kampkampi", "badan dard", "sar dard",
+        "garam", "tapman", "hararat", "chills", "dengue", "malaria", "motijhara"
+      ],
+      "clinical_focus": "Determine exact duration, pattern (intermittent vs continuous), rigors, retro-orbital headache, rash, and urinary/GI symptoms.",
+      "targeted_questions_hi": [
+        "बुखार कितने दिनों से है और क्या साथ में कंपकंपी (chills) या पसीना भी आता है?",
+        "क्या आंखों के पीछे दर्द, शरीर पर कोई लाल चकत्ते (rash), या उल्टी जैसी समस्या है?",
+        "क्या आपको सिरदर्द, जोड़ों में तेज दर्द या पेशाब में जलन महसूस हो रही है?"
+      ],
+      "targeted_questions_en": [
+        "How many days have you had fever, and does it come with chills or shivering?",
+        "Do you have pain behind your eyes, any skin rashes, or persistent nausea?",
+        "Are you experiencing severe joint pain, intense headache, or burning urination?"
+      ],
+      "suggested_chips_hi": [
+        "2-3 दिनों से बुखार है",
+        "ठंड लगकर बुखार आता है",
+        "बदन और जोड़ों में तेज दर्द",
+        "आंखों के पीछे दर्द व उल्टी",
+        "गले में खराश भी है"
+      ],
+      "red_flags": [
+        "Fever lasting > 5 days without defervescence",
+        "Petechial rash, mucosal bleeding (bleeding gums/nose - suspect Dengue warning signs)",
+        "Persistent severe abdominal pain and persistent vomiting",
+        "Altered sensorium, extreme lethargy, or convulsion"
+      ],
+      "safety_guidance": "Encourage adequate oral hydration (ORS, coconut water, clean fluids). Avoid NSAIDs (aspirin, ibuprofen) until dengue is ruled out; paracetamol 500-650mg is safe for fever control."
+    },
+    {
+      "id": "cardiovascular_chest",
+      "title": "Acute Chest Discomfort & Cardiovascular Triage (सीने में दर्द व हृदय आपातकालीन प्रोटोकॉल)",
+      "guideline_source": "Cardiological Society of India (CSI) & MoHFW Emergency Triage Guidelines",
+      "keywords_en": [
+        "chest pain", "chest tightness", "chest pressure", "heart", "angina",
+        "palpitations", "shortness of breath", "sweating", "left arm pain", "jaw pain"
+      ],
+      "keywords_hi": [
+        "chhati me dard", "seene me dard", "seene me jalan", "seene me dabav",
+        "dil ki dhadkan", "ghabrahat", "paseena", "chhati bhari", "bayen hath me dard"
+      ],
+      "clinical_focus": "Evaluate central crushing or pressure sensation radiating to left arm, neck, or jaw; check for diaphoresis, dyspnea, and relation to exertion.",
+      "targeted_questions_hi": [
+        "क्या सीने में भारीपन या दबाव महसूस हो रहा है जो बाएं हाथ, गर्दन या जबड़े की तरफ जा रहा है?",
+        "क्या चलने-फिरने पर यह तकलीफ बढ़ती है और साथ में ठंडा पसीना या घबराहट हो रही है?",
+        "क्या आपको पहले से हाई बीपी, शुगर या दिल की कोई बीमारी है?"
+      ],
+      "targeted_questions_en": [
+        "Is the pain a heavy crushing sensation radiating to your left arm, neck, or jaw?",
+        "Does the pain worsen with physical exertion, and do you feel cold sweating or dizziness?",
+        "Do you have a personal history of hypertension, diabetes, or previous heart conditions?"
+      ],
+      "suggested_chips_hi": [
+        "सीने में भारी दबाव है",
+        "बाएं हाथ और जबड़े में दर्द",
+        "सांस फूल रही है और पसीना",
+        "चलने पर दर्द बढ़ता है",
+        "गैस या जलन जैसा लगता है"
+      ],
+      "red_flags": [
+        "Central chest tightness or heavy pressure lasting > 15 minutes",
+        "Pain radiating to left arm, neck, shoulder, or jaw with diaphoresis",
+        "Chest pain accompanied by syncope, extreme lightheadedness, or sudden breathlessness",
+        "History of coronary artery disease with new or worsening resting pain"
+      ],
+      "safety_guidance": "IMMEDIATE EMERGENCY RED FLAG: Do not perform vigorous exertion. Patient requires urgent 12-lead ECG and immediate physician evaluation in emergency / triage room."
+    },
+    {
+      "id": "respiratory_pulmonary",
+      "title": "Respiratory Tract & Pulmonary Guidelines (श्वसन तंत्र एवं फेफड़े संबंधी दिशानिर्देश)",
+      "guideline_source": "MoHFW National Tuberculosis Elimination Programme (NTEP) & Indian Chest Society",
+      "keywords_en": [
+        "cough", "shortness of breath", "breathlessness", "asthma", "wheezing",
+        "phlegm", "sputum", "sore throat", "bronchitis", "tuberculosis", "throat pain"
+      ],
+      "keywords_hi": [
+        "khansi", "saans phoolna", "saans lene me dikkat", "gale me kharash", "balgam",
+        "dama", "wheezing", "gale me dard", "sukhi khansi", "saans me aawaz"
+      ],
+      "clinical_focus": "Assess cough duration (cough > 2 weeks warrants sputum examination for TB per NTEP), sputum characteristics, wheeze, nocturnal dyspnea, and stridor.",
+      "targeted_questions_hi": [
+        "खांसी कितने दिनों से है—क्या यह सूखी है या बलगम भी आ रहा है?",
+        "क्या सांस लेते समय सीटी जैसी आवाज (wheezing) आती है या रात में सांस फूलती है?",
+        "क्या बलगम में खून (blood) आया है या पिछले कुछ हफ्तों में वजन घटा है?"
+      ],
+      "targeted_questions_en": [
+        "How long have you had this cough, and is it dry or producing phlegm?",
+        "Do you notice a whistling/wheezing sound when breathing, or shortness of breath at night?",
+        "Have you seen blood in your sputum, or experienced unexplained weight loss or evening fever?"
+      ],
+      "suggested_chips_hi": [
+        "2 हफ्तों से ज्यादा खांसी",
+        "सूखी खांसी और गले में खराश",
+        "बलगम के साथ खांसी",
+        "सीटी जैसी आवाज (Wheeze)",
+        "सांस फूलने की समस्या"
+      ],
+      "red_flags": [
+        "Inability to complete full sentences in one breath (acute severe asthma/COPD)",
+        "Stridor, cyanosis (bluish tint around lips/fingertips), SpO2 < 92%",
+        "Hemoptysis (coughing up fresh blood)",
+        "Cough persisting > 2 weeks with evening fever and night sweats (suspect Pulmonary TB)"
+      ],
+      "safety_guidance": "For patients with known asthma, check inhaler compliance and correct spacer technique. Warm water gargles and steam inhalation provide symptomatic relief for acute viral pharyngitis."
+    },
+    {
+      "id": "gastrointestinal_abdominal",
+      "title": "Gastrointestinal & Abdominal Triage (पेट एवं पाचन तंत्र प्रोटोकॉल)",
+      "guideline_source": "Indian Society of Gastroenterology & MoHFW Clinical Management Guidelines",
+      "keywords_en": [
+        "stomach pain", "abdominal pain", "vomiting", "nausea", "loose motions",
+        "diarrhea", "acidity", "gas", "indigestion", "constipation", "jaundice"
+      ],
+      "keywords_hi": [
+        "pet dard", "pet me gas", "acidity", "jalan", "ulti", "ji michlana",
+        "dast", "loose motion", "pet kharab", "kabz", "piliya", "khana na pachna"
+      ],
+      "clinical_focus": "Identify quadrant location of abdominal pain, relation to food intake, signs of dehydration from diarrhea/vomiting, and signs of surgical acute abdomen.",
+      "targeted_questions_hi": [
+        "पेट में दर्द किस जगह हो रहा है—ऊपर (epigastric), नाभि के पास, या नीचे दाईं तरफ?",
+        "क्या उल्टी या दस्त की समस्या है, और आज कितनी बार दस्त हुए हैं?",
+        "क्या पेट में बहुत तेज असहनीय दर्द या छूने पर सख्त महसूस हो रहा है?"
+      ],
+      "targeted_questions_en": [
+        "Where is the pain located—upper abdomen, around the navel, or lower right side?",
+        "Are you experiencing vomiting or loose motions, and how many episodes today?",
+        "Is the abdominal pain severe and unbearable, or does the belly feel unusually rigid?"
+      ],
+      "suggested_chips_hi": [
+        "ऊपरी पेट में तेज जलन",
+        "दस्त और उल्टी (Diarrhea)",
+        "नाभि या नीचे दाईं तरफ दर्द",
+        "खाना खाने के बाद दर्द",
+        "गैस और भारीपन"
+      ],
+      "red_flags": [
+        "Rigid, board-like abdomen with severe rebound tenderness (suspect Perforation/Peritonitis)",
+        "Hematemesis (vomiting blood or coffee-ground material) or Melena (black tarry stool)",
+        "Severe dehydration with sunken eyes, poor skin turgor, and low urine output",
+        "High fever with yellow discoloration of sclera/skin (acute cholangitis / severe hepatitis)"
+      ],
+      "safety_guidance": "Initiate Oral Rehydration Solution (ORS) immediately for acute diarrhea. Avoid heavy greasy food. Do not administer strong NSAID analgesics for unexplained acute abdominal pain before clinical exam."
+    },
+    {
+      "id": "neurological_headache",
+      "title": "Neurological & Headache Guidelines (तंत्रिका तंत्र एवं सिरदर्द दिशानिर्देश)",
+      "guideline_source": "Indian Academy of Neurology & Stroke Triage Standards",
+      "keywords_en": [
+        "headache", "migraine", "dizziness", "vertigo", "stroke", "paralysis",
+        "numbness", "seizure", "fits", "loss of consciousness", "fainting"
+      ],
+      "keywords_hi": [
+        "sir dard", "sar dard", "chakkar", "aankhon ke aage andhera", "behosh",
+        "daura", "mirgi", "haath pair sunn", "kamzori", "bolne me dikkat"
+      ],
+      "clinical_focus": "Differentiate primary headaches from acute secondary red flags; screen for FAST stroke symptoms (Face droop, Arm drift, Speech difficulty, Time window).",
+      "targeted_questions_hi": [
+        "क्या सिरदर्द अचानक बिजली की तरह तेज हुआ है या धीरे-धीरे बढ़ रहा है?",
+        "क्या चेहरे पर टेढ़ापन, हाथ-पैर में कमजोरी, या बोलने में तुतलाहट महसूस हो रही है?",
+        "क्या सिरदर्द के साथ उल्टी, गर्दन में अकड़न, या तेज रोशनी से परेशानी होती है?"
+      ],
+      "targeted_questions_en": [
+        "Did this headache start suddenly like a thunderclap, or has it built up gradually?",
+        "Have you noticed facial asymmetry, weakness in one arm or leg, or slurred speech?",
+        "Is the headache accompanied by vomiting, neck stiffness, or extreme sensitivity to light?"
+      ],
+      "suggested_chips_hi": [
+        "अचानक बहुत तेज सिरदर्द",
+        "आधे सिर में दर्द (Migraine)",
+        "चक्कर और आंखों में अंधेरा",
+        "गर्दन में अकड़न व बुखार",
+        "तनाव व नींद की कमी से"
+      ],
+      "red_flags": [
+        "FAST positive: Sudden facial droop, unilateral arm/leg weakness, or slurred speech (Acute Stroke - 4.5h window)",
+        "Sudden onset 'worst headache of life' (thunderclap headache - suspect Subarachnoid Hemorrhage)",
+        "Headache with fever and painful neck stiffness (suspect Meningitis)",
+        "New onset seizure or unexplained altered consciousness"
+      ],
+      "safety_guidance": "FAST positive patients require immediate emergency triage transfer for non-contrast brain CT scan. Keep patient sitting upright and calm."
+    },
+    {
+      "id": "musculoskeletal_ortho",
+      "title": "Musculoskeletal & Orthopedic Guidelines (जोड़ों व हड्डियों के दर्द का प्रोटोकॉल)",
+      "guideline_source": "Indian Orthopaedic Association & MoHFW Musculoskeletal STGs",
+      "keywords_en": [
+        "back pain", "knee pain", "joint pain", "arthritis", "neck pain",
+        "shoulder pain", "fracture", "swelling", "stiffness", "sciatica"
+      ],
+      "keywords_hi": [
+        "kamar dard", "ghutne me dard", "jodon me dard", "gathiya", "gardan dard",
+        "moch", "sujan", "chalne me takleef", "peeth dard", "kamar me lachak"
+      ],
+      "clinical_focus": "Assess mechanical vs inflammatory joint pain, morning stiffness duration, radiation down limbs, and trauma/fall history.",
+      "targeted_questions_hi": [
+        "दर्द किस जोड़ या कमर में है, और क्या यह चलने-फिरने से बढ़ता है या सुबह सोकर उठने पर अकड़न रहती है?",
+        "क्या कमर का दर्द पैर के निचले हिस्से तक जाता है (sciatica) या पैर में सुन्नपन है?",
+        "क्या हाल ही में कोई चोट, फिसलकर गिरना, या भारी वजन उठाने की घटना हुई है?"
+      ],
+      "targeted_questions_en": [
+        "Which joint or spine area hurts, and is there prolonged morning stiffness exceeding 30 minutes?",
+        "Does back pain radiate down the leg (sciatica) or cause numbness in the foot/groin?",
+        "Did this pain start following a recent fall, sports injury, or heavy lifting?"
+      ],
+      "suggested_chips_hi": [
+        "घुटनों में दर्द व सूजन",
+        "कमर दर्द जो पैर तक जाए",
+        "सुबह उठने पर जोड़ों में अकड़न",
+        "चोट या मोच के बाद दर्द",
+        "हल्का बदन दर्द व थकान"
+      ],
+      "red_flags": [
+        "Back pain with bilateral leg weakness or bowel/bladder incontinence (suspect Cauda Equina Syndrome)",
+        "Hot, acutely swollen, erythematous single joint with fever (suspect Septic Arthritis)",
+        "Severe bone deformity or inability to bear weight after fall (suspect Acute Fracture)",
+        "Back pain in an elderly or osteoporotic patient following minor slip"
+      ],
+      "safety_guidance": "Encourage gentle range-of-motion as tolerated. Avoid sudden heavy lifting. Hot or cold fermentation depending on acute vs chronic stage."
+    },
+    {
+      "id": "endocrine_metabolic_ncd",
+      "title": "Metabolic & Chronic Non-Communicable Diseases (मधुमेह एवं उच्च रक्तचाप प्रोटोकॉल)",
+      "guideline_source": "Research Society for Study of Diabetes in India (RSSDI) & National NCD Guidelines",
+      "keywords_en": [
+        "sugar", "diabetes", "bp", "blood pressure", "hypertension", "thirsty",
+        "frequent urination", "weight loss", "weakness", "diabetic foot"
+      ],
+      "keywords_hi": [
+        "sugar", "madhumeh", "bp", "raktchap", "high bp", "peshab bar bar",
+        "pyas lagna", "vajan kam", "kamzori", "chakkar bp", "sugar checkup"
+      ],
+      "clinical_focus": "Review known duration of diabetes/hypertension, medication adherence, recent blood glucose/HbA1c/BP readings, and screen for micro/macrovascular complications.",
+      "targeted_questions_hi": [
+        "क्या आप पहले से बीपी या शुगर की दवा नियमित ले रहे हैं, और आखिरी बार रीडिंग कब चेक कराई थी?",
+        "क्या ज्यादा प्यास लगना, बार-बार पेशाब आना, या पैरों में जलन व सुन्नपन रहता है?",
+        "क्या पैरों में कोई घाव (diabetic foot ulcer) है जो ठीक नहीं हो रहा?"
+      ],
+      "targeted_questions_en": [
+        "Are you taking your prescribed diabetes or BP medications regularly, and when was your last check?",
+        "Have you experienced increased thirst, frequent urination at night, or burning in feet?",
+        "Do you have any non-healing sores or ulcers on your feet?"
+      ],
+      "suggested_chips_hi": [
+        "शुगर का नियमित चेकअप",
+        "बीपी की दवा चल रही है",
+        "पैरों में सुन्नपन व जलन",
+        "बार-बार पेशाब व कमजोरी",
+        "दवाएं नियमित नहीं ले रहे"
+      ],
+      "red_flags": [
+        "Systolic BP > 180 mmHg or Diastolic > 110 mmHg with headache/blurred vision (Hypertensive Emergency)",
+        "Hypoglycemic symptoms: Tremors, diaphoresis, sudden confusion, palpitations relieved by sugar",
+        "Deep, infected or necrotic diabetic foot ulcer",
+        "Fruity breath odor with rapid deep breathing and confusion (suspect Diabetic Ketoacidosis)"
+      ],
+      "safety_guidance": "Never stop antihypertensive or antidiabetic medicines abruptly without physician direction. Inspect feet daily for cuts or sores."
+    },
+    {
+      "id": "ayush_integrative",
+      "title": "Ministry of AYUSH Integrative Health Guidelines (आयुष एवं पारंपरिक स्वास्थ्य दिशानिर्देश)",
+      "guideline_source": "Ministry of AYUSH Standard Treatment Guidelines & Integrative OPD Protocols",
+      "keywords_en": [
+        "ayurveda", "ayush", "herbal", "homeopathy", "unani", "yoga", "dosha",
+        "kadha", "churna", "vaat", "pitta", "kapha", "digestive fire"
+      ],
+      "keywords_hi": [
+        "ayurved", "ayush", "desi ilaj", "gharelu nuskha", "kadha", "churna",
+        "vaat", "pitta", "kapha", "gathiya ayurvedic", "pachan", "agni"
+      ],
+      "clinical_focus": "Record prior use of indigenous/herbal formulations, dietary habits (Ahara), daily routine (Dinacharya), and assess primary Agni (metabolic fire) status.",
+      "targeted_questions_hi": [
+        "क्या आप इस परेशानी के लिए कोई काढ़ा, चूर्ण, या आयुर्वेदिक घरेलू नुस्खा ले रहे हैं?",
+        "आपकी भूख, पाचन और नींद की क्या स्थिति है—क्या पेट साफ रहता है?",
+        "क्या आप प्राकृतिक एवं संतुलित आहार (पथ्य-अपथ्य) के नियमों का पालन कर रहे हैं?"
+      ],
+      "targeted_questions_en": [
+        "Are you currently taking any Ayurvedic decoction (Kadha), Churna, or home remedy for this condition?",
+        "How is your digestion, appetite, and sleep quality—is bowel evacuation regular?",
+        "Would you like an integrative physician review combining standard clinical care with AYUSH dietary guidance?"
+      ],
+      "suggested_chips_hi": [
+        "काढ़ा या चूर्ण ले रहे हैं",
+        "पाचन ठीक नहीं है",
+        "आयुर्वेदिक सलाह चाहते हैं",
+        "घरेलू नुस्खे से आराम नहीं",
+        "वात-पित्त-कफ असंतुलन"
+      ],
+      "red_flags": [
+        "Suspected heavy metal toxicity from unstandardized classical preparations",
+        "Delaying essential emergency allopathic care (e.g. chest pain, severe infection) for home remedies",
+        "Severe electrolyte imbalance from excessive purgative herbal preparations"
+      ],
+      "safety_guidance": "Always disclose all herbal, Ayurvedic, and OTC formulations to your consulting doctor to avoid herb-drug interactions."
+    }
+  ]
+}

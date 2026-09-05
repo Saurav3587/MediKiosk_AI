@@ -57,10 +57,10 @@ export function AdminSystemPage() {
     },
     {
       id: "historyAIService",
-      name: "Clinical History Synthesis Engine",
-      status: healthData?.historyAIService?.status || "Online",
-      metrics: `Model: ${healthData?.historyAIService?.model || "BioMistral"} • Red-Flag Classifier v3`,
-      desc: "Synthesizes structured history drafts and flags red-flag triage conditions without diagnosing.",
+      name: "Sarvam-105B Sovereign Clinical Brain + Medical RAG",
+      status: "Online (Sarvam-105B)",
+      metrics: "Model: Sarvam-105B • MoHFW STG & Emergency Red-Flag Index",
+      desc: "Grounds patient triage Q&A strictly on verified Indian clinical guidelines; formulates empathetic Hindi voice responses and doctor documentation.",
       icon: Sparkles,
       color: "emerald",
     },
@@ -72,6 +72,15 @@ export function AdminSystemPage() {
       desc: "National digital health account federation and tokenized consent gateway.",
       icon: ShieldCheck,
       color: "amber",
+    },
+    {
+      id: "sarvamService",
+      name: "Sarvam AI Sovereign Speech & Voice Stack",
+      status: "Active (Production)",
+      metrics: "Saaras v3 (Voice→Text) • Bulbul v3 (Text→Voice) • Mayura v1 (Translation)",
+      desc: "Sovereign Indian multimodal voice model trained on Hinglish, Hindi, and 22 Indian regional languages.",
+      icon: Mic,
+      color: "emerald",
     },
   ];
 

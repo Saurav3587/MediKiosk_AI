@@ -64,8 +64,15 @@ export function AccessibilityProvider({ children }) {
     setDarkMode((prev) => !prev);
   };
 
-  const speakGuidance = (text, lang = "en") => {
-    speechService.speakText(text, { lang });
+  const speakGuidance = (text, options = {}) => {
+    const lang = typeof options === "string" ? options : options.lang || "en";
+    const onStart = typeof options === "object" ? options.onStart : undefined;
+    const onEnd = typeof options === "object" ? options.onEnd : undefined;
+    speechService.speakText(text, { lang, onStart, onEnd });
+  };
+
+  const stopSpeaking = () => {
+    speechService.stopSpeaking();
   };
 
   const toggleAssistedMode = () => {
@@ -98,6 +105,7 @@ export function AccessibilityProvider({ children }) {
         isMenuOpen,
         setIsMenuOpen,
         speakGuidance,
+        stopSpeaking,
         darkMode,
         setDarkMode,
         toggleDarkMode,

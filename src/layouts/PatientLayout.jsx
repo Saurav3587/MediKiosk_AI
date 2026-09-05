@@ -12,7 +12,7 @@ import { usePatient } from "../context/PatientContext";
 
 export function PatientLayout({ children, activeStepId, hideStepper = false }) {
   const location = useLocation();
-  const { t, patientInfo } = usePatient();
+  const { t, patientInfo, resetIntake } = usePatient();
 
   // Determine active step from path if not explicitly provided
   let step = activeStepId;
@@ -31,7 +31,7 @@ export function PatientLayout({ children, activeStepId, hideStepper = false }) {
       {/* Top Header */}
       <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="hover:opacity-90 transition">
+          <Link to="/" onClick={resetIntake} className="hover:opacity-90 transition">
             <MediKioskLogo size="default" showTagline={false} />
           </Link>
 
@@ -41,6 +41,7 @@ export function PatientLayout({ children, activeStepId, hideStepper = false }) {
 
             <Link
               to="/"
+              onClick={resetIntake}
               className="p-2 rounded-xl text-slate-500 hover:text-navy-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               title="Return to home"
             >

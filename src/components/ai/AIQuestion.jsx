@@ -7,10 +7,12 @@ export function AIQuestion({ questionEn, questionHi, sectionName }) {
   const { language } = usePatient();
   const { speakGuidance, assistedMode } = useAccessibility();
 
-  const currentText = language === "hi" ? (questionHi || questionEn) : questionEn;
+  // Prioritize Hindi when in Hindi mode or whenever Hindi text is available
+  const currentText = language === "hi" ? (questionHi || questionEn) : (questionEn || questionHi);
+  const secondaryText = language === "hi" ? questionEn : questionHi;
 
   const handleSpeak = () => {
-    speakGuidance(currentText, language);
+    speakGuidance(currentText, language || "hi");
   };
 
   return (
@@ -34,6 +36,14 @@ export function AIQuestion({ questionEn, questionHi, sectionName }) {
       }`}>
         {currentText}
       </h2>
+
+      {/* Subtle Translation Subtitle (English for doctor/companion) */}
+      {secondaryText && secondaryText !== currentText && (
+        <p className="text-xs text-slate-400 mt-1.5 italic max-w-xl mx-auto">
+          {secondaryText}
+        </p>
+      )}
+
 
       {/* Speaker Narration Button */}
       <div className="mt-4 flex items-center justify-center">
